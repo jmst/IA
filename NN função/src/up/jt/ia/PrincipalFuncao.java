@@ -26,7 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 
-public class Principal extends JFrame {
+public class PrincipalFuncao extends JFrame {
 
 	/**
 	 * 
@@ -48,7 +48,7 @@ public class Principal extends JFrame {
 	private JPanel jspo;
 
 	protected static final int NIN = 1;
-	protected static final int NHID = 8;
+	protected static final int NHID = 16;
 
 	private EnEstado estado;
 	private int nCiclos;
@@ -56,6 +56,7 @@ public class Principal extends JFrame {
 	private double erroMaximo;
 	private double erro;
 	private double alfa;
+	private boolean fim;
 	private double[] inp = new double[NIN + 1]; // input + teta
 	private double[] phIn = new double[NHID]; // o somatorio dos inputs * w dos
 												// percep da 1a. camada (hid)
@@ -76,15 +77,13 @@ public class Principal extends JFrame {
 	private double vOut; // o valor de output a mostrar
 	private ArrayList<Caso> casos = new ArrayList<>();
 	// private DecimalFormat df = new DecimalFormat("###.##");
-	private Thread t;
 	private Aprendiz apre;
 	private Serie obj;
-	private ArrayList<Serie> series;
 	private Serie ss;
 
 	// private boolean alterando = false;
 
-	public Principal() {
+	public PrincipalFuncao() {
 		super("Rede Neuronal");
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		WindowListener l = new WindowAdapter() {
@@ -97,7 +96,6 @@ public class Principal extends JFrame {
 		};
 		addWindowListener(l);
 
-		series = new ArrayList<Serie>();
 		ss = new Serie();
 		obj = new Serie();
 		for (double v = 0; v <= 5; v += 0.1) {
@@ -109,11 +107,15 @@ public class Principal extends JFrame {
 		casos.add(c);
 		c = new Caso(1.5, f(1.5));
 		casos.add(c);
-		c = new Caso(2.5, f(2.5));
+		c = new Caso(2, f(2));
 		casos.add(c);
-		c = new Caso(3, f(3));
+//		c = new Caso(3, f(3));
+//		casos.add(c);
+		c = new Caso(3.5, f(3.5));
 		casos.add(c);
 		c = new Caso(4, f(4));
+		casos.add(c);
+		c = new Caso(4.5, f(4.5));
 		casos.add(c);
 
 		estado = EnEstado.Limpo;
@@ -125,7 +127,8 @@ public class Principal extends JFrame {
 	}
 
 	private double f(double v) {
-		return (1 / (0.2 + (v - 1.3) * (v - 1.8))) * ((1 / (0.3 + (v - 4) * (v - 4.3))));
+		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
+//		return (1 / (0.3 + (v - 1) * (v - 1.5))) * ((1 / (0.4 + (v - 3.5) * (v - 4.5))));
 	}
 
 	private int saiOuNao() {
@@ -168,10 +171,8 @@ public class Principal extends JFrame {
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
 		bParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (t != null) {
-					t.interrupt();
-					refresh();
-				}
+				fim = true;
+				refresh();
 			}
 		});
 
@@ -180,8 +181,6 @@ public class Principal extends JFrame {
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
 		bReiniciar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (t != null)
-					t.interrupt();
 				iniciar();
 				refresh();
 			}
@@ -190,7 +189,7 @@ public class Principal extends JFrame {
 		pBotoes.add(new JLabel("Alfa"), new GridBagConstraints(4, 0, 1, 1, 0, 0, GridBagConstraints.LINE_END,
 				GridBagConstraints.NONE, new Insets(1, 20, 1, 1), 5, 5));
 		tfAlfa = new CampoTexto();
-		tfAlfa.setText("0.1");
+		tfAlfa.setText("1");
 		alfa = tfAlfa.getValor();
 		pBotoes.add(tfAlfa, new GridBagConstraints(5, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START,
 				GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 5, 5));
@@ -198,7 +197,7 @@ public class Principal extends JFrame {
 		pBotoes.add(new JLabel("Erro max."), new GridBagConstraints(6, 0, 1, 1, 0, 0, GridBagConstraints.LINE_END,
 				GridBagConstraints.NONE, new Insets(1, 20, 1, 1), 5, 5));
 		tfErroMaximo = new CampoTexto();
-		tfErroMaximo.setText("0.1");
+		tfErroMaximo.setText("0.02");
 		erroMaximo = tfErroMaximo.getValor();
 		pBotoes.add(tfErroMaximo, new GridBagConstraints(7, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START,
 				GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 5, 5));
@@ -206,7 +205,7 @@ public class Principal extends JFrame {
 		pBotoes.add(new JLabel("Erro"), new GridBagConstraints(8, 0, 1, 1, 0, 0, GridBagConstraints.LINE_END,
 				GridBagConstraints.NONE, new Insets(1, 20, 1, 1), 5, 5));
 		tfErro = new CampoTexto();
-		tfErro.setText("0.1");
+		tfErro.setText(" ");
 		erro = tfErro.getValor();
 		tfErro.setEnabled(false);
 		pBotoes.add(tfErro, new GridBagConstraints(9, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START,
@@ -283,10 +282,9 @@ public class Principal extends JFrame {
 		for (int j = 0; j < NHID + 1; j++) {
 			wO[j] = Math.random() * 2 - 1;
 		}
-		series.clear();
 		nCiclos = 0;
-		alfa = 0.1;
-		erroMaximo = 0.1;
+		alfa = 0.5;
+		erroMaximo = 0.01;
 		estado = EnEstado.Limpo;
 		limpar();
 		repaint();
@@ -303,7 +301,8 @@ public class Principal extends JFrame {
 		}
 		if (erroMaximo < 0.01)
 			erroMaximo = 0.01;
-		while (treinado == false && estado == EnEstado.A_Aprender && nCiclos < nCiclosMax) {
+		fim = false;
+		while (treinado == false && !fim && estado == EnEstado.A_Aprender && nCiclos < nCiclosMax) {
 			double erroMax = 0;
 			treinado = true;
 			for (Caso c : casos) {
@@ -339,6 +338,7 @@ public class Principal extends JFrame {
 			}
 			;
 		}
+		fim = true;
 		estado = EnEstado.Treinado;
 		refresh();
 	}
@@ -384,7 +384,6 @@ public class Principal extends JFrame {
 	private void limpar() {
 		setIn(0);
 		setOut(0);
-		series.clear();
 	}
 
 	private void setIn(double v) {
@@ -414,7 +413,7 @@ public class Principal extends JFrame {
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Principal p = new Principal();
+				PrincipalFuncao p = new PrincipalFuncao();
 				p.pack();
 				p.setVisible(true);
 			}
@@ -518,7 +517,7 @@ public class Principal extends JFrame {
 				yant = y;
 			}
 			cont = false;
-			gc.setColor(Color.gray);
+			gc.setColor(new Color(32,128,32));
 			synchronized (ss) {
 				for (int i = 0; i < 51; i++) {
 					if (ss.getX(i) == Double.MIN_VALUE)
@@ -534,23 +533,6 @@ public class Principal extends JFrame {
 				}
 
 			}
-			// synchronized (series) {
-			// for (Serie s : series) {
-			// for (int i = 0; i < 51; i++) {
-			// if (s.getX(i) == Double.MIN_VALUE)
-			// continue;
-			// int x = (int) (s.getX(i) * escX) + zeroX;
-			// int y = alt - zeroY - (int) (s.getY(i) * escY);
-			// if (cont) {
-			// gc.drawLine(xant, yant, x, y);
-			// }
-			// cont = true;
-			// xant = x;
-			// yant = y;
-			// }
-			//
-			// }
-			// }
 			gc.setColor(Color.blue);
 			for (Caso c : casos) {
 				int x = (int) (c.getInp() * escX) + zeroX;
