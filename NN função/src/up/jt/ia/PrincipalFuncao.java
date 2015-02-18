@@ -107,19 +107,18 @@ public class PrincipalFuncao extends JFrame {
 		casos.add(c);
 		c = new Caso(1.5, f(1.5));
 		casos.add(c);
-		c = new Caso(2, f(2));
+		c = new Caso(2.5, f(2.5));
 		casos.add(c);
-//		c = new Caso(3, f(3));
+		c = new Caso(3, f(3));
+		casos.add(c);
+//		c = new Caso(3.5, f(3.5));
 //		casos.add(c);
-		c = new Caso(3.5, f(3.5));
-		casos.add(c);
 		c = new Caso(4, f(4));
 		casos.add(c);
 		c = new Caso(4.5, f(4.5));
 		casos.add(c);
 
 		estado = EnEstado.Limpo;
-		// setPreferredSize( new Dimension( 1200,800));
 		enche();
 		add(pGeral);
 		iniciar();
@@ -127,10 +126,20 @@ public class PrincipalFuncao extends JFrame {
 	}
 
 	private double f(double v) {
-		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
+//		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
 //		return (1 / (0.3 + (v - 1) * (v - 1.5))) * ((1 / (0.4 + (v - 3.5) * (v - 4.5))));
+//		return  ds(3*v-2) + ds(3*v-10);
+		return Math.exp(-(v-1)*(v-1)) + 0.8 * Math.exp(-(v-4)*(v-4));
 	}
 
+	private double ds( double v) {
+		return 2 * s(v) * (1 - s(v));
+	}
+
+	private double s( double v) {
+		return 1/(1+Math.exp(-v));
+	}
+	
 	private int saiOuNao() {
 		return JOptionPane.showConfirmDialog(this, " Confirma o fim do programa ? ",
 				" Rede Neuronal - Fim do Programa ", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -327,9 +336,6 @@ public class PrincipalFuncao extends JFrame {
 				synchronized (ss) {
 					ss = s;
 				}
-				// synchronized (series) {
-				// series.add(s);
-				// }
 				refresh();
 			}
 			try {
@@ -501,6 +507,10 @@ public class PrincipalFuncao extends JFrame {
 			for (double v = 2; v >= -2; v -= 0.5) {
 				int y = alt - zeroY - (int) (v * escY);
 				gc.drawLine(zeroX - 3, y, zeroX + 3, y);
+			}
+			for (double v = 0.5; v <= 5; v += 0.5) {
+				int x = zeroX + (int) (v * escX);
+				gc.drawLine( x, zeroY-3, x, zeroY + 3);
 			}
 			boolean cont = false;
 			gc.setColor(Color.red);
