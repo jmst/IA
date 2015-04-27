@@ -126,10 +126,10 @@ public class PrincipalFuncao extends JFrame {
 	}
 
 	private double f(double v) {
-//		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
-//		return (1 / (0.3 + (v - 1) * (v - 1.5))) * ((1 / (0.4 + (v - 3.5) * (v - 4.5))));
+		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
 //		return  ds(3*v-2) + ds(3*v-10);
-		return Math.exp(-(v-1)*(v-1)) + 0.8 * Math.exp(-(v-4)*(v-4));
+//		return 1-2*ds(2*v);
+//		return 0.9 * Math.exp(-(v-1)*(v-1)) + 0.8 * Math.exp(-(0.8*v-4)*(0.7*v-4));
 	}
 
 	private double ds( double v) {
