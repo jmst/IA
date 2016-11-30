@@ -38,8 +38,8 @@ public class PrincipalFuncao extends JFrame {
 	private CampoTexto tfAlfa;
 	private JButton bAprender;
 	private JButton b5ciclos;
-	private JButton b20ciclos;
 	private JButton b50ciclos;
+	private JButton b500ciclos;
 	private JButton bParar;
 	private JButton bReiniciar;
 	private JButton bSair;
@@ -126,8 +126,8 @@ public class PrincipalFuncao extends JFrame {
 	}
 
 	private double f(double v) {
-		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
-//		return  ds(3*v-2) + ds(3*v-10);
+//		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
+		return  ds(3*v-2) + ds(3*v-10);
 //		return 1-2*ds(2*v);
 //		return 0.9 * Math.exp(-(v-1)*(v-1)) + 0.8 * Math.exp(-(0.8*v-4)*(0.7*v-4));
 	}
@@ -254,23 +254,23 @@ public class PrincipalFuncao extends JFrame {
 				refresh();
 			}
 		});
-		b20ciclos = new Botao("20 ciclos");
-		pBotoes.add(b20ciclos, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+		b50ciclos = new Botao("50 ciclos");
+		pBotoes.add(b50ciclos, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
-		b20ciclos.addActionListener(new ActionListener() {
+		b50ciclos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				nCiclosMax = 20;
+				nCiclosMax = 50;
 				apre = new Aprendiz();
 				apre.execute();
 				refresh();
 			}
 		});
-		b50ciclos = new Botao("50 ciclos");
-		pBotoes.add(b50ciclos, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+		b500ciclos = new Botao("500 ciclos");
+		pBotoes.add(b500ciclos, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
-		b50ciclos.addActionListener(new ActionListener() {
+		b500ciclos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				nCiclosMax = 50;
+				nCiclosMax = 500;
 				apre = new Aprendiz();
 				apre.execute();
 				refresh();
