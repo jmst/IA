@@ -1,9 +1,11 @@
 package up.jt.ia;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -37,7 +39,7 @@ public class PrincipalFuncao extends JFrame {
 	private CampoTexto tfErro;
 	private CampoTexto tfAlfa;
 	private JButton bAprender;
-	private JButton b5ciclos;
+	private JButton b5000ciclos;
 	private JButton b50ciclos;
 	private JButton b500ciclos;
 	private JButton bParar;
@@ -126,10 +128,10 @@ public class PrincipalFuncao extends JFrame {
 	}
 
 	private double f(double v) {
-//		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
-		return  ds(3*v-2) + ds(3*v-10);
-//		return 1-2*ds(2*v);
+		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
 //		return 0.9 * Math.exp(-(v-1)*(v-1)) + 0.8 * Math.exp(-(0.8*v-4)*(0.7*v-4));
+//		return 1-2*ds(2*v);
+//		return  ds(3*v-2) + ds(3*v-10);
 	}
 
 	private double ds( double v) {
@@ -243,19 +245,8 @@ public class PrincipalFuncao extends JFrame {
 				}
 			}
 		});
-		b5ciclos = new Botao("5 ciclos");
-		pBotoes.add(b5ciclos, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
-				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
-		b5ciclos.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				nCiclosMax = 5;
-				apre = new Aprendiz();
-				apre.execute();
-				refresh();
-			}
-		});
 		b50ciclos = new Botao("50 ciclos");
-		pBotoes.add(b50ciclos, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+		pBotoes.add(b50ciclos, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
 		b50ciclos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -266,11 +257,22 @@ public class PrincipalFuncao extends JFrame {
 			}
 		});
 		b500ciclos = new Botao("500 ciclos");
-		pBotoes.add(b500ciclos, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+		pBotoes.add(b500ciclos, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
 		b500ciclos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				nCiclosMax = 500;
+				apre = new Aprendiz();
+				apre.execute();
+				refresh();
+			}
+		});
+		b5000ciclos = new Botao("5000 ciclos");
+		pBotoes.add(b5000ciclos, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
+		b5000ciclos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				nCiclosMax = 5000;
 				apre = new Aprendiz();
 				apre.execute();
 				refresh();
@@ -308,8 +310,8 @@ public class PrincipalFuncao extends JFrame {
 		} catch (Exception ex) {
 			erroMaximo = 0.01;
 		}
-		if (erroMaximo < 0.01)
-			erroMaximo = 0.01;
+		if (erroMaximo < 0.001)
+			erroMaximo = 0.001;
 		fim = false;
 		while (treinado == false && !fim && estado == EnEstado.A_Aprender && nCiclos < nCiclosMax) {
 			double erroMax = 0;
@@ -326,7 +328,7 @@ public class PrincipalFuncao extends JFrame {
 			if (erroMax > erroMaximo)
 				treinado = false;
 			erro = erroMax;
-			if (nCiclos % 5 == 0) {
+			if (nCiclos % 10 == 0) {
 				Serie s = new Serie();
 				for (double x = 0; x <= 5; x += 0.1) {
 					inp[0] = x;
@@ -342,13 +344,13 @@ public class PrincipalFuncao extends JFrame {
 				Thread.sleep(1);
 			} catch (Exception ex) {
 			}
-			;
 		}
 		fim = true;
 		estado = EnEstado.Treinado;
 		refresh();
 	}
 
+	// ajusta os pesos das ligações dos perceptrões
 	private void ajustaPesos() {
 		double delta = (out - poOut) * poOut * (1 - poOut);
 		for (int j = 0; j < NHID + 1; j++) {
@@ -363,6 +365,7 @@ public class PrincipalFuncao extends JFrame {
 		}
 	}
 
+	// calcula o valor da saída dos perceptrões
 	private void calcula() {
 		for (int i = 0; i < NHID; i++) {
 			phIn[i] = 0;
@@ -436,7 +439,7 @@ public class PrincipalFuncao extends JFrame {
 
 		protected Botao(String texto) {
 			super(texto);
-			setPreferredSize(new Dimension(90, 20));
+			setPreferredSize(new Dimension(100, 20));
 		}
 	}
 
@@ -489,7 +492,8 @@ public class PrincipalFuncao extends JFrame {
 			super();
 		}
 
-		public void paint(Graphics gc) {
+		public void paint(Graphics g) {
+			Graphics2D gc = (Graphics2D) g;
 			super.paint(gc);
 			int xant = 0;
 			int yant = 0;
