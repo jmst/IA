@@ -1,6 +1,5 @@
 package up.jt.ia;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -29,10 +29,6 @@ import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 
 public class PrincipalFuncao extends JFrame {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4171119970741915087L;
 	private CampoTexto tfNCiclos;
 	private CampoTexto tfErroMaximo;
@@ -48,6 +44,7 @@ public class PrincipalFuncao extends JFrame {
 	private JPanel pGeral;
 	private JPanel pBotoes;
 	private JPanel jspo;
+	private JComboBox<String> cbFuncao;
 
 	protected static final int NIN = 1;
 	protected static final int NHID = 16;
@@ -74,7 +71,7 @@ public class PrincipalFuncao extends JFrame {
 														// camada
 	private double[] wO = new double[NHID + 1]; // os pesos dos percep da
 	// 1a. camada para os percep
-	// da 2a. (que é só um)
+	// da 2a. (que ï¿½ sï¿½ um)
 	private double out; // os outputs desejados
 	private double vOut; // o valor de output a mostrar
 	private ArrayList<Caso> casos = new ArrayList<>();
@@ -82,6 +79,7 @@ public class PrincipalFuncao extends JFrame {
 	private Aprendiz apre;
 	private Serie obj;
 	private Serie ss;
+	private int nFunc;
 
 	// private boolean alterando = false;
 
@@ -98,27 +96,12 @@ public class PrincipalFuncao extends JFrame {
 		};
 		addWindowListener(l);
 
+		nFunc = 0;
 		ss = new Serie();
 		obj = new Serie();
 		for (double v = 0; v <= 5; v += 0.1) {
-			obj.setXY(v, f(v));
+			obj.setXY(v, f(nFunc, v));
 		}
-		Caso c = new Caso(0.5, f(0.5));
-		casos.add(c);
-		c = new Caso(1, f(1));
-		casos.add(c);
-		c = new Caso(1.5, f(1.5));
-		casos.add(c);
-		c = new Caso(2.5, f(2.5));
-		casos.add(c);
-		c = new Caso(3, f(3));
-		casos.add(c);
-//		c = new Caso(3.5, f(3.5));
-//		casos.add(c);
-		c = new Caso(4, f(4));
-		casos.add(c);
-		c = new Caso(4.5, f(4.5));
-		casos.add(c);
 
 		estado = EnEstado.Limpo;
 		enche();
@@ -127,21 +110,50 @@ public class PrincipalFuncao extends JFrame {
 		refresh();
 	}
 
-	private double f(double v) {
-		return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
-//		return 0.9 * Math.exp(-(v-1)*(v-1)) + 0.8 * Math.exp(-(0.8*v-4)*(0.7*v-4));
-//		return 1-2*ds(2*v);
-//		return  ds(3*v-2) + ds(3*v-10);
+	private ArrayList<Caso> defCasos(int nFunc) {
+		ArrayList<Caso> casos = new ArrayList<>();
+		Caso c = new Caso(0.5, f(nFunc, 0.5));
+		casos.add(c);
+		c = new Caso(1, f(nFunc, 1));
+		casos.add(c);
+		c = new Caso(1.5, f(nFunc, 1.5));
+		casos.add(c);
+		c = new Caso(2.5, f(nFunc, 2.5));
+		casos.add(c);
+		c = new Caso(3, f(nFunc, 3));
+		casos.add(c);
+		// c = new Caso(3.5, f(3.5));
+		// casos.add(c);
+		c = new Caso(4, f(nFunc, 4));
+		casos.add(c);
+		c = new Caso(4.5, f(nFunc, 4.5));
+		casos.add(c);
+		return casos;
 	}
 
-	private double ds( double v) {
+	private double f(int m, double v) {
+		switch (m) {
+		case 1:
+			return (1 / (0.2 + (v - 1) * (v - 1.5))) * ((1 / (0.25 + (v - 4) * (v - 4.5))));
+		case 2:
+			return 0.9 * Math.exp(-(v - 1) * (v - 1)) + 0.8 * Math.exp(-(0.8 * v - 4) * (0.7 * v - 4));
+		case 3:
+			return 1 - 2 * ds(2 * v);
+		case 4:
+			return ds(3 * v - 2) + ds(2.5 * v - 10);
+		default:
+			return 0;
+		}
+	}
+
+	private double ds(double v) {
 		return 2 * s(v) * (1 - s(v));
 	}
 
-	private double s( double v) {
-		return 1/(1+Math.exp(-v));
+	private double s(double v) {
+		return 1 / (1 + Math.exp(-v));
 	}
-	
+
 	private int saiOuNao() {
 		return JOptionPane.showConfirmDialog(this, " Confirma o fim do programa ? ",
 				" Rede Neuronal - Fim do Programa ", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -178,8 +190,8 @@ public class PrincipalFuncao extends JFrame {
 		});
 
 		bParar = new Botao("Parar");
-		pBotoes.add(bParar, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER,
-				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
+		pBotoes.add(bParar, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE,
+				new Insets(2, 2, 2, 2), 5, 5));
 		bParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				fim = true;
@@ -235,8 +247,8 @@ public class PrincipalFuncao extends JFrame {
 				GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 5, 5));
 
 		bSair = new Botao("Sair");
-		pBotoes.add(bSair, new GridBagConstraints(14, 0, 1, 1, 1, 0, GridBagConstraints.CENTER,
-				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
+		pBotoes.add(bSair, new GridBagConstraints(14, 0, 1, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE,
+				new Insets(2, 2, 2, 2), 5, 5));
 		bSair.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int res = saiOuNao();
@@ -245,6 +257,7 @@ public class PrincipalFuncao extends JFrame {
 				}
 			}
 		});
+
 		b50ciclos = new Botao("50 ciclos");
 		pBotoes.add(b50ciclos, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
@@ -256,6 +269,7 @@ public class PrincipalFuncao extends JFrame {
 				refresh();
 			}
 		});
+
 		b500ciclos = new Botao("500 ciclos");
 		pBotoes.add(b500ciclos, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
@@ -267,6 +281,7 @@ public class PrincipalFuncao extends JFrame {
 				refresh();
 			}
 		});
+
 		b5000ciclos = new Botao("5000 ciclos");
 		pBotoes.add(b5000ciclos, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
 				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
@@ -278,6 +293,27 @@ public class PrincipalFuncao extends JFrame {
 				refresh();
 			}
 		});
+
+		// JT
+		pBotoes.add(new JLabel("FunÃ§Ã£o"), new GridBagConstraints(4, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
+		String[] opFuncao = new String[] { " 1 ", " 2 ", " 3 ", " 4 "};
+		cbFuncao = new JComboBox<String>(opFuncao);
+		pBotoes.add(cbFuncao, new GridBagConstraints(5, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+				GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 5, 5));
+		cbFuncao.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					nFunc = Integer.parseInt( cbFuncao.getSelectedItem().toString().trim());
+					casos = defCasos( nFunc);
+				} catch (Exception ex) {
+				}
+				refresh();
+			}
+		});
+		cbFuncao.setSelectedItem(opFuncao[3]);
+		//
+
 	}
 
 	private void iniciar() {
@@ -350,7 +386,7 @@ public class PrincipalFuncao extends JFrame {
 		refresh();
 	}
 
-	// ajusta os pesos das ligações dos perceptrões
+	// ajusta os pesos das ligaï¿½ï¿½es dos perceptrï¿½es
 	private void ajustaPesos() {
 		double delta = (out - poOut) * poOut * (1 - poOut);
 		for (int j = 0; j < NHID + 1; j++) {
@@ -365,7 +401,7 @@ public class PrincipalFuncao extends JFrame {
 		}
 	}
 
-	// calcula o valor da saída dos perceptrões
+	// calcula o valor da saï¿½da dos perceptrï¿½es
 	private void calcula() {
 		for (int i = 0; i < NHID; i++) {
 			phIn[i] = 0;
@@ -439,7 +475,7 @@ public class PrincipalFuncao extends JFrame {
 
 		protected Botao(String texto) {
 			super(texto);
-			setPreferredSize(new Dimension(100, 20));
+			setPreferredSize(new Dimension(110, 20));
 		}
 	}
 
@@ -514,7 +550,7 @@ public class PrincipalFuncao extends JFrame {
 			}
 			for (double v = 0.5; v <= 5; v += 0.5) {
 				int x = zeroX + (int) (v * escX);
-				gc.drawLine( x, zeroY-3, x, zeroY + 3);
+				gc.drawLine(x, zeroY - 3, x, zeroY + 3);
 			}
 			boolean cont = false;
 			gc.setColor(Color.red);
@@ -531,7 +567,7 @@ public class PrincipalFuncao extends JFrame {
 				yant = y;
 			}
 			cont = false;
-			gc.setColor(new Color(32,128,32));
+			gc.setColor(new Color(32, 128, 32));
 			synchronized (ss) {
 				for (int i = 0; i < 51; i++) {
 					if (ss.getX(i) == Double.MIN_VALUE)
